@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>TradingView Chart - Line Chart Default</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #0b0f1a;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .controls {
+            padding: 12px 20px;
+            background: #131722;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border-bottom: 1px solid #2a2e39;
+            flex-shrink: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #2962ff;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #0039cb;
+        }
+        
+        button.back-btn {
+            background: #2a2e39;
+            margin-left: auto;
+        }
+        
+        button.back-btn:hover {
+            background: #3d414d;
+        }
+        
+        button.delete-from-chart {
+            background: #ff4444;
+        }
+        
+        button.delete-from-chart:hover {
+            background: #cc0000;
+        }
+        
+        button.chart-type-btn {
+            background: #2a2e39;
+        }
+        
+        button.chart-type-btn.active {
+            background: #2962ff;
+        }
+        
+        #symbolDisplay {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-left: 10px;
+            padding-left: 15px;
+            border-left: 1px solid #2a2e39;
+        }
+        
+        .exchange-badge {
+            background: #2a2e39;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .timeframe-info {
+            margin-left: 15px;
+            color: #5d6b82;
+            font-size: 0.9rem;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+        
+        #tvchart {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            background: #0b0f1a;
+        }
+    </style>
+    <!-- Load TradingView library -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <div class="nav-buttons">
+            <button onclick="prevStock()">← Prev</button>
+            <button onclick="nextStock()">Next →</button>
+        </div>
+        <span id="symbolDisplay">Loading...</span>
+        <span id="exchangeDisplay" class="exchange-badge">NSE</span>
+        <span class="timeframe-info">📅 Showing 1 Year Data</span>
+        
+        <div class="chart-controls">
+            <button id="candleBtn" class="chart-type-btn" onclick="changeChartType('candle')">Candle</button>
+            <button id="lineBtn" class="chart-type-btn active" onclick="changeChartType('line')">Line</button>
+        </div>
+        
+        <button class="delete-from-chart" onclick="deleteCurrentStock()">Remove</button>
+        <button class="back-btn" onclick="window.location='index.html'">← Back</button>
+    </div>
+    
+    <div id="tvchart"></div>
+
+    <script>
+        // Get symbol from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentSymbol = urlParams.get('symbol') || 'RELIANCE';
+        let currentIndex = urlParams.get('index') || '0';
+        
+        // Clean symbol (remove any exchange prefixes if present)
+        currentSymbol = currentSymbol.replace('NSE:', '').replace('BSE:', '').replace('.NS', '').replace('.BO', '');
+        
+        // Determine exchange (some stocks are on BSE)
+        const bseStocks = ['MUTHOOTFIN', 'PAGEIND', 'JUBLFOOD', 'PEL', 'MOTHERSON', 'NAUKRI', 'IDEA', 'GODREJPROP', 'BAJAJELEC', 'BHARATFORG', 'CONCOR', 'CUMMINSIND', 'DLF', 'HAVELLS', 'ICICIPRULI', 'INDIGO', 'JUBLFOOD', 'LUPIN', 'MARICO', 'MUTHOOTFIN', 'PAGEIND', 'PEL', 'SIEMENS', 'SRTRANSFIN', 'TORNTPHARM', 'UBL'];
+        const exchange = bseStocks.includes(currentSymbol) ? 'BSE' : 'NSE';
+        const tradingViewSymbol = exchange === 'NSE' ? `NSE:${currentSymbol}` : `BSE:${currentSymbol}`;
+        
+        // Display symbol and exchange info
+        document.getElementById('symbolDisplay').textContent = currentSymbol;
+        document.getElementById('exchangeDisplay').textContent = exchange;
+        
+        // Get watchlist from localStorage
+        let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+        
+        // TradingView widget reference
+        let tvWidget = null;
+        
+        // Create TradingView widget with LINE chart as default (style 2 = Line)
+        tvWidget = new TradingView.widget({
+            "container_id": "tvchart",
+            "width": "100%",
+            "height": "100%",
+            "symbol": tradingViewSymbol,
+            "interval": "1D",
+            "timezone": "Asia/Kolkata",
+            "theme": "dark",
+            "style": "2",  // Changed from "1" (candle) to "2" (line)
+            "locale": "en",
+            "toolbar_bg": "#131722",
+            "enable_publishing": false,
+            "hide_top_toolbar": false,
+            "save_image": false,
+            "studies": ["Volume@tv-basicstudies"],
+            "show_popup_button": true,
+            "withdateranges": true,
+            "autosize": true,
+            "range": "12M"  // 1 year default
+        });
+        
+        // Function to change chart type
+        function changeChartType(type) {
+            if (!tvWidget) return;
+            
+            if (type === 'candle') {
+                tvWidget.chart().setChartType(1); // 1 = Candlestick
+                document.getElementById('candleBtn').classList.add('active');
+                document.getElementById('lineBtn').classList.remove('active');
+            } else {
+                tvWidget.chart().setChartType(2); // 2 = Line
+                document.getElementById('lineBtn').classList.add('active');
+                document.getElementById('candleBtn').classList.remove('active');
+            }
+        }
+        
+        // Navigation functions
+        function prevStock() {
+            let i = parseInt(currentIndex);
+            i--;
+            if (i < 0) i = watchlist.length - 1;
+            window.location.href = `chart.html?symbol=${watchlist[i]}&index=${i}`;
+        }
+        
+        function nextStock() {
+            let i = parseInt(currentIndex);
+            i++;
+            if (i >= watchlist.length) i = 0;
+            window.location.href = `chart.html?symbol=${watchlist[i]}&index=${i}`;
+        }
+        
+        // Delete current stock from watchlist
+        function deleteCurrentStock() {
+            if (confirm(`Remove ${currentSymbol} from watchlist?`)) {
+                watchlist.splice(currentIndex, 1);
+                localStorage.setItem('watchlist', JSON.stringify(watchlist));
+                
+                if (watchlist.length === 0) {
+                    window.location.href = 'index.html';
+                } else {
+                    // Go to next stock or previous if this was the last
+                    let newIndex = currentIndex;
+                    if (newIndex >= watchlist.length) newIndex = watchlist.length - 1;
+                    window.location.href = `chart.html?symbol=${watchlist[newIndex]}&index=${newIndex}`;
+                }
+            }
+        }
+        
+        // Make functions global
+        window.prevStock = prevStock;
+        window.nextStock = nextStock;
+        window.deleteCurrentStock = deleteCurrentStock;
+        window.changeChartType = changeChartType;
+    </script>
+</body>
+</html>
