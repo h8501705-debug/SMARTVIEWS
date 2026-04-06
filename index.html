@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseQuant | Precision Trading Terminal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0A0A0F;
+            --card-bg: #111116;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #FFFFFF;
+            --text-muted: #88888F;
+            --accent: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .logo-container {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Perfectly centered SVG Logo */
+        .logo-svg {
+            width: 60px;
+            height: 60px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-bottom: 16px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            max-width: 600px;
+        }
+
+        /* --- STACKED CARD SECTION --- */
+        .card-section {
+            position: relative;
+            height: 300vh; /* Controlled by ScrollTrigger */
+            background: var(--bg);
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 320px;
+            height: 450px;
+            perspective: 1000px;
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform-origin: center center;
+            will-change: transform, opacity;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            filter: grayscale(40%);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Specific stacking logic */
+        .card-nifty { z-index: 1; }
+        .card-equity { z-index: 2; }
+        .card-forex { z-index: 3; }
+
+        /* --- PREMIUM COPY SECTION --- */
+        .copy-section {
+            padding: 150px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .copy-block {
+            margin-bottom: 120px;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .copy-block h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .copy-block p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            padding: 60px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .copy-block { margin-bottom: 80px; }
+            .card-stack { width: 280px; height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="white" stroke-width="2" fill="none" />
+                <path d="M30 50 L45 35 L55 65 L70 50" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <h1>PulseQuant</h1>
+        <p>The institutional-grade terminal for precision execution and market clarity.</p>
+    </section>
+
+    <section class="card-section">
+        <div class="sticky-container">
+            <div class="card-stack">
+                <div class="card card-nifty">
+                    <img src="https://images.unsplash.com/photo-1611974717482-9800961166d7?q=80&w=600&auto=format&fit=crop" class="card-img" alt="Nifty 50">
+                    <h3>Nifty 50</h3>
+                    <p>Track India's benchmark index with sub-second latency and custom volatility heatmaps.</p>
+                </div>
+                <div class="card card-equity">
+                    <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&auto=format&fit=crop" class="card-img" alt="Equity">
+                    <h3>Global Equities</h3>
+                    <p>Institutional ownership data and dark pool flow analysis across major stock exchanges.</p>
+                </div>
+                <div class="card card-forex">
+                    <img src="https://images.unsplash.com/photo-1614028674026-a65e31bfd27c?q=80&w=600&auto=format&fit=crop" class="card-img" alt="Forex">
+                    <h3>Forex</h3>
+                    <p>Real-time liquidity mapping and order-book depth for major and exotic currency pairs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="copy-section">
+        <div class="copy-block" id="copy-1">
+            <h2>The edge is in the detail.</h2>
+            <p>Precision isn’t optional in trading—it’s survival. We’ve stripped away the noise to leave you with pure, actionable data streams.</p>
+        </div>
+
+        <div class="copy-block" id="copy-2">
+            <h2>Built for the disciplined.</h2>
+            <p>PulseQuant doesn't predict the future; it maps the present with absolute fidelity. See what the market is doing, not what it's saying.</p>
+        </div>
+
+        <div class="copy-block" id="copy-3">
+            <h2>Execute without hesitation.</h2>
+            <p>Every millisecond saved is a margin protected. Our interface is optimized for high-frequency cognition and instant reaction.</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        &copy; 2026 PulseQuant / Terminal. Private Local Storage Active.
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- HERO FADE ---
+        gsap.from(".hero > *", {
+            opacity: 0,
+            y: 30,
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power4.out"
+        });
+
+        // --- CARD STACK ANIMATION ---
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".card-section",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1,
+            }
+        });
+
+        // Initial setup for cards
+        gsap.set(".card-nifty", { x: -30, rotation: -8, scale: 0.9 });
+        gsap.set(".card-equity", { x: 0, rotation: 0, scale: 1 });
+        gsap.set(".card-forex", { x: 30, rotation: 8, scale: 0.9 });
+
+        // Animation sequence
+        tl.to(".card-forex", {
+            x: 0,
+            rotation: 0,
+            scale: 1.05,
+            duration: 1
+        })
+        .to(".card-forex", {
+            y: -600,
+            opacity: 0,
+            duration: 1
+        }, "+=0.5")
+        .to(".card-equity", {
+            scale: 1.05,
+            duration: 1
+        }, "-=0.5")
+        .to(".card-equity", {
+            y: -600,
+            opacity: 0,
+            duration: 1
+        }, "+=0.5")
+        .to(".card-nifty", {
+            x: 0,
+            rotation: 0,
+            scale: 1.05,
+            duration: 1
+        }, "-=0.5");
+
+        // --- COPY SECTIONS REVEAL ---
+        const copyBlocks = gsap.utils.toArray('.copy-block');
+        copyBlocks.forEach((block) => {
+            gsap.to(block, {
+                scrollTrigger: {
+                    trigger: block,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse",
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+        });
+    </script>
+</body>
+</html>

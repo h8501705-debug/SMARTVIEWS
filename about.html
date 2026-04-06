@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | PulseQuant Terminal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #050508;
+            --panel: #0D0D12;
+            --text: #FFFFFF;
+            --muted: #88888F;
+            --accent: #FFFFFF;
+            --border: rgba(255, 255, 255, 0.06);
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* --- UTILITIES --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #11111a 0%, var(--bg) 70%);
+        }
+
+        .hero-tag {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: var(--muted);
+            margin-bottom: 20px;
+            opacity: 0;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 12vw, 8.5rem);
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            line-height: 0.9;
+            margin-bottom: 2rem;
+            opacity: 0;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--muted);
+            max-width: 600px;
+            font-weight: 300;
+            opacity: 0;
+        }
+
+        /* --- FEATURE CONTENT SECTIONS --- */
+        .content-section {
+            padding: 25vh 0;
+            overflow: hidden;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .reversed .content-grid {
+            grid-template-columns: 1fr 1.2fr;
+        }
+
+        .text-wrap {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .text-wrap h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .text-wrap p {
+            color: var(--muted);
+            font-size: 1.15rem;
+            max-width: 480px;
+            margin-bottom: 2rem;
+        }
+
+        .visual-wrap {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .visual-wrap img {
+            width: 100%;
+            height: 120%; /* For parallax */
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.1) brightness(0.7);
+        }
+
+        /* --- IMPACT STATEMENT (REPLACED) --- */
+        .impact-statement {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .impact-text {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+            max-width: 1000px;
+        }
+
+        .word-reveal {
+            display: inline-block;
+            opacity: 0.1;
+            margin: 0 0.15em;
+        }
+
+        /* --- FINAL CLOSING --- */
+        .final-cta {
+            padding: 30vh 0;
+            text-align: center;
+            background: radial-gradient(circle at bottom, #11111a 0%, var(--bg) 50%);
+        }
+
+        .final-cta h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            color: var(--muted);
+            margin-bottom: 40px;
+        }
+
+        .final-cta p {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 960px) {
+            .content-grid, .reversed .content-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .text-wrap p { margin: 0 auto 2rem auto; }
+            .reversed .visual-wrap { order: 2; }
+            .visual-wrap { height: 350px; }
+            .container { padding: 0 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-tag">System. Terminal. Authority.</div>
+            <h1 id="hero-title">Built for Precision</h1>
+            <p id="hero-sub">The terminal for the modern trader, engineered for mechanical execution and total market clarity.</p>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="content-grid">
+                <div class="text-wrap">
+                    <h2>Markets reward clarity.</h2>
+                    <p>PulseQuant strips away the noise of retail indicators. We provide a surgical, high-fidelity visualization layer designed for institutional-grade pattern recognition.</p>
+                </div>
+                <div class="visual-wrap">
+                    <img src="https://images.unsplash.com/photo-1611974717482-9800961166d7?q=80&w=2070&auto=format&fit=crop" alt="Trading Terminal" class="parallax-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section reversed">
+        <div class="container">
+            <div class="content-grid">
+                <div class="visual-wrap">
+                    <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=2070&auto=format&fit=crop" alt="Market Data" class="parallax-img">
+                </div>
+                <div class="text-wrap">
+                    <h2>Organize your edge.</h2>
+                    <p>Stop hunting and start executing. Our smart watchlists sync your primary assets across a single-pane terminal interface, ensuring you are never more than a click away from the trade.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="content-grid">
+                <div class="text-wrap">
+                    <h2>Zero Latency Insight.</h2>
+                    <p>Latency is the silent killer of alpha. Every tick and every order flow shift is processed in real-time, giving you the confidence to act while the market is still reacting.</p>
+                </div>
+                <div class="visual-wrap">
+                    <img src="https://images.unsplash.com/photo-1551288049-bbbda546697a?q=80&w=2070&auto=format&fit=crop" alt="Data Flow" class="parallax-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="impact-statement">
+        <div class="container">
+            <h2 class="impact-text">
+                <span class="word-reveal">Trade</span>
+                <span class="word-reveal">with</span>
+                <span class="word-reveal">precision.</span>
+                <span class="word-reveal">Execute</span>
+                <span class="word-reveal">with</span>
+                <span class="word-reveal">confidence.</span>
+            </h2>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <div class="container">
+            <div class="reveal-up">
+                <h3>PulseQuant v3.0</h3>
+                <p>Engineered for traders who value precision over noise.</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Initial Hero Load
+            const heroTl = gsap.timeline();
+            heroTl.to(".hero-tag", { opacity: 1, y: 0, duration: 1, ease: "power2.out", delay: 0.2 })
+                  .to("#hero-title", { opacity: 1, duration: 1.5, ease: "power4.out" }, "-=0.5")
+                  .to("#hero-sub", { opacity: 1, duration: 1, ease: "power2.out" }, "-=1");
+
+            // 2. Section Content Animation
+            gsap.utils.toArray(".text-wrap").forEach((text) => {
+                gsap.to(text, {
+                    scrollTrigger: {
+                        trigger: text,
+                        start: "top 85%",
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                });
+            });
+
+            gsap.utils.toArray(".visual-wrap").forEach((visual) => {
+                gsap.to(visual, {
+                    scrollTrigger: {
+                        trigger: visual,
+                        start: "top 80%",
+                    },
+                    opacity: 1,
+                    scale: 1,
+                    duration: 1.5,
+                    ease: "expo.out"
+                });
+            });
+
+            // 3. Parallax Effect for Images
+            gsap.utils.toArray(".parallax-img").forEach((img) => {
+                gsap.to(img, {
+                    scrollTrigger: {
+                        trigger: img.parentElement,
+                        scrub: true,
+                        start: "top bottom",
+                        end: "bottom top"
+                    },
+                    y: -60,
+                    ease: "none"
+                });
+            });
+
+            // 4. Fullscreen Impact Word-by-word reveal
+            const words = gsap.utils.toArray(".word-reveal");
+            gsap.to(words, {
+                scrollTrigger: {
+                    trigger: ".impact-statement",
+                    start: "top 40%",
+                    end: "bottom 60%",
+                    scrub: true,
+                },
+                opacity: 1,
+                stagger: 0.1,
+                color: "#FFFFFF",
+                ease: "none"
+            });
+
+            // 5. Final CTA Reveal
+            gsap.from(".reveal-up", {
+                scrollTrigger: {
+                    trigger: ".final-cta",
+                    start: "top 80%",
+                },
+                opacity: 0,
+                y: 50,
+                duration: 1.2,
+                ease: "power3.out"
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseQuant | Terminal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0A0A0F;
+            --panel: #111116;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #FFFFFF;
+            --text-main: #FFFFFF;
+            --text-muted: #88888F;
+            --danger: #FF4444;
+            --sidebar-width: 320px;
+            --active-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            background: var(--bg);
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .status-pill {
+            font-size: 11px;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 100px;
+            letter-spacing: 0.05em;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
+
+        #sidebar {
+            width: var(--sidebar-width);
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-view {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg);
+        }
+
+        #view-watchlists { transform: translateX(0); }
+        #view-stocks { transform: translateX(100%); }
+
+        .sidebar-active-stocks #view-watchlists { transform: translateX(-100%); }
+        .sidebar-active-stocks #view-stocks { transform: translateX(0); }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-add {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background: var(--text-main);
+            color: var(--bg);
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0;
+        }
+
+        .btn-back:hover { color: var(--text-main); }
+
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .watchlist-item, .stock-item {
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .watchlist-item:hover, .stock-item:hover {
+            background: var(--panel);
+        }
+
+        .stock-item.active {
+            background: var(--active-bg);
+            border-left: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .delete-btn {
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 4px;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .watchlist-item:hover .delete-btn, .stock-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover { color: var(--danger); }
+
+        /* Stock Management UI */
+        .stock-mgmt {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        input[type="text"], textarea {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .bulk-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .file-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-align: center;
+            border: 1px dashed var(--border);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        #chart-viewport {
+            flex: 1;
+            background: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-controls {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .nav-btn:hover { background: var(--text-main); color: var(--bg); }
+
+        #tradingview_container {
+            flex: 1;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            #sidebar { width: 100%; height: 350px; border-right: none; border-bottom: 1px solid var(--border); }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: var(--panel);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 450px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">PulseQuant / Terminal</div>
+        <div class="status-pill" id="active-context">Watchlists</div>
+    </header>
+
+    <main>
+        <section id="sidebar">
+            <div id="view-watchlists" class="sidebar-view">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>All Watchlists</span>
+                        <span id="wl-count" style="font-size: 10px;">0/5</span>
+                    </div>
+                    <button class="btn-add" onclick="openModal('wl-modal')">+ Create Watchlist</button>
+                </div>
+                <div id="watchlist-container" class="list-container"></div>
+            </div>
+
+            <div id="view-stocks" class="sidebar-view">
+                <div class="panel-header">
+                    <button class="btn-back" onclick="showWatchlists()">← Back to Watchlists</button>
+                    <div id="current-wl-title" style="font-weight: 600; font-size: 16px;">Watchlist</div>
+                </div>
+                <div id="stock-container" class="list-container"></div>
+                
+                <div class="stock-mgmt">
+                    <div class="input-group">
+                        <input type="text" id="symbol-input" placeholder="Symbol (RELIANCE or NSE:500325)">
+                        <button class="btn-add" onclick="addSingleSymbol()">Add</button>
+                    </div>
+                    <div class="bulk-actions">
+                        <button class="btn-add" style="font-size: 10px;" onclick="openModal('bulk-modal')">Bulk Add</button>
+                        <label class="file-label">
+                            Upload CSV/XLSX
+                            <input type="file" id="file-upload" hidden accept=".csv,.xlsx">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="chart-viewport">
+            <div id="tradingview_container"></div>
+            <div class="nav-controls">
+                <button class="nav-btn" onclick="navStock(-1)" title="Previous (Left Arrow)">←</button>
+                <button class="nav-btn" onclick="navStock(1)" title="Next (Right Arrow)">→</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="wl-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px;">New Watchlist</h3>
+            <input type="text" id="new-wl-name" placeholder="Name (e.g. Bluechips)">
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-add" style="flex: 1" onclick="createWatchlist()">Create</button>
+                <button class="btn-add" style="flex: 1; border: none" onclick="closeModal('wl-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bulk-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 10px;">Bulk Add Symbols</h3>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">Enter symbols separated by commas or new lines.</p>
+            <textarea id="bulk-input" rows="8" placeholder="RELIANCE&#10;TCS,INFY&#10;NSE:SBIN"></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-add" style="flex: 1" onclick="handleBulkAdd()">Add All</button>
+                <button class="btn-add" style="flex: 1; border: none" onclick="closeModal('bulk-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        let watchlists = JSON.parse(localStorage.getItem('pq_watchlists')) || [];
+        let activeWlIndex = -1;
+        let activeStockIndex = -1;
+        let currentSymbol = "BINANCE:BTCUSDT";
+
+        // --- CORE UI LOGIC ---
+        function init() {
+            renderWatchlists();
+            loadChart(currentSymbol);
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // File Upload
+            document.getElementById('file-upload').addEventListener('change', handleFileUpload);
+            
+            // Keyboard Nav
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.key === 'ArrowRight') navStock(1);
+                if (e.key === 'ArrowLeft') navStock(-1);
+            });
+        }
+
+        function renderWatchlists() {
+            const container = document.getElementById('watchlist-container');
+            container.innerHTML = '';
+            document.getElementById('wl-count').innerText = `${watchlists.length}/5`;
+
+            watchlists.forEach((wl, index) => {
+                const item = document.createElement('div');
+                item.className = 'watchlist-item';
+                item.onclick = () => showStocks(index);
+                item.innerHTML = `
+                    <span class="wl-name">${wl.name} (${wl.symbols.length})</span>
+                    <span class="delete-btn" onclick="deleteWatchlist(event, ${index})">✕</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function showStocks(index) {
+            activeWlIndex = index;
+            document.getElementById('sidebar').classList.add('sidebar-active-stocks');
+            document.getElementById('current-wl-title').innerText = watchlists[index].name;
+            document.getElementById('active-context').innerText = "Stock View";
+            renderStocks();
+        }
+
+        function showWatchlists() {
+            activeWlIndex = -1;
+            document.getElementById('sidebar').classList.remove('sidebar-active-stocks');
+            document.getElementById('active-context').innerText = "Watchlists";
+            renderWatchlists();
+        }
+
+        function renderStocks() {
+            const container = document.getElementById('stock-container');
+            container.innerHTML = '';
+            const symbols = watchlists[activeWlIndex].symbols;
+
+            symbols.forEach((sym, index) => {
+                const item = document.createElement('div');
+                item.className = `stock-item ${sym === currentSymbol ? 'active' : ''}`;
+                item.onclick = () => {
+                    activeStockIndex = index;
+                    changeChart(sym);
+                };
+                item.innerHTML = `
+                    <span>${sym}</span>
+                    <span class="delete-btn" onclick="deleteStock(event, ${index})">✕</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // --- ACTIONS ---
+        function createWatchlist() {
+            const name = document.getElementById('new-wl-name').value.trim();
+            if (!name) return;
+            if (watchlists.length >= 5) return alert("Limit reached");
+            
+            watchlists.push({ name, symbols: [] });
+            save();
+            renderWatchlists();
+            closeModal('wl-modal');
+            document.getElementById('new-wl-name').value = '';
+        }
+
+        function deleteWatchlist(e, index) {
+            e.stopPropagation();
+            watchlists.splice(index, 1);
+            save();
+            renderWatchlists();
+        }
+
+        function addSingleSymbol() {
+            const input = document.getElementById('symbol-input');
+            const sym = input.value.trim().toUpperCase();
+            if (!sym) return;
+            
+            addSymbolsToActive([sym]);
+            input.value = '';
+        }
+
+        function handleBulkAdd() {
+            const text = document.getElementById('bulk-input').value;
+            const syms = text.split(/[\n,]+/).map(s => s.trim().toUpperCase()).filter(s => s);
+            addSymbolsToActive(syms);
+            closeModal('bulk-modal');
+            document.getElementById('bulk-input').value = '';
+        }
+
+        function addSymbolsToActive(symArray) {
+            if (activeWlIndex === -1) return;
+            const currentList = watchlists[activeWlIndex].symbols;
+            symArray.forEach(sym => {
+                if (!currentList.includes(sym)) currentList.push(sym);
+            });
+            save();
+            renderStocks();
+            if (symArray.length === 1) changeChart(symArray[0]);
+        }
+
+        function deleteStock(e, index) {
+            e.stopPropagation();
+            watchlists[activeWlIndex].symbols.splice(index, 1);
+            save();
+            renderStocks();
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = evt.target.result;
+                let syms = [];
+
+                if (file.name.endsWith('.xlsx')) {
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    syms = json.flat().filter(s => s && typeof s === 'string');
+                } else {
+                    syms = data.split(/[\n,]+/).map(s => s.trim().toUpperCase()).filter(s => s);
+                }
+
+                addSymbolsToActive(syms);
+            };
+
+            if (file.name.endsWith('.xlsx')) reader.readAsBinaryString(file);
+            else reader.readAsText(file);
+        }
+
+        function navStock(dir) {
+            if (activeWlIndex === -1) return;
+            const symbols = watchlists[activeWlIndex].symbols;
+            if (symbols.length === 0) return;
+
+            activeStockIndex = (activeStockIndex + dir + symbols.length) % symbols.length;
+            changeChart(symbols[activeStockIndex]);
+        }
+
+        function changeChart(sym) {
+            currentSymbol = sym;
+            renderStocks(); // Update active highlight
+            loadChart(sym);
+        }
+
+        function save() {
+            localStorage.setItem('pq_watchlists', JSON.stringify(watchlists));
+        }
+
+        // --- MODAL HELPERS ---
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // --- TRADINGVIEW CORE (DO NOT TOUCH) ---
+        function loadChart(symbol) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "2", // STYLE 2 = LINE CHART
+                "locale": "en",
+                "toolbar_bg": "#0A0A0F",
+                "enable_publishing": false,
+                "hide_top_toolbar": false,
+                "hide_legend": false,
+                "save_image": false,
+                "container_id": "tradingview_container",
+                "backgroundColor": "#0A0A0F",
+                "gridColor": "rgba(255, 255, 255, 0.04)"
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
